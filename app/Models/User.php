@@ -35,6 +35,7 @@ class User extends Authenticatable
         'remember_token',
     ];
 
+
     /**
      * The attributes that should be cast to native types.
      *
@@ -43,7 +44,7 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
-        'status' => UserStatus::class, // Utilisation de l'énumération
+        'state' => 'string', // Utilisation de l'énumération
     ];
 
     /**

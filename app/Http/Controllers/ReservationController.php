@@ -7,32 +7,50 @@ use Illuminate\Http\Request;
 
 class ReservationController extends Controller
 {
-    public function index()
+    // Historique avec filtres
+    public function history(Request $request)
     {
-        return Reservation::with('user', 'bike', 'startStation', 'endStation')->get();
+        $query = Reservation::with(['user', 'bike', 'startStation', 'endStation']);
+
+        // Filtrer par date
+        if ($request->has('start_date') && $request->has('end_date')) {
+            $query->whereBetween('reservation_time', [$request->start_date, $request->end_date]);
+        }
+
+        // Filtrer par type de vélo
+        if ($request->has('type_velo')) {
+            $query->whereHas('bike.type', function ($q) use ($request) {
+                $q->where('name', $request->type_velo);
+            });
+        }
+
+        // Filtrer par station
+        if ($request->has('station_id')) {
+            $query->where('start_station_id', $request->station_id)
+                  ->orWhere('end_station_id', $request->station_id);
+        }
+
+        // Filtrer par utilisateur
+        if ($request->has('user_id')) {
+            $query->where('user_id', $request->user_id);
+        }
+
+        $reservations = $query->get();
+
+        return response()->json($reservations);
     }
 
-    public function show($id)
-    {
-        return Reservation::with('user', 'bike', 'startStation', 'endStation')->findOrFail($id);
-    }
-
-    public function store(Request $request)
-    {
-        $reservation = Reservation::create($request->all());
-
-        $user = $reservation->user;
-        $bikeTypePrice = $reservation->bike->typeVelo->price;
-        $user->credits -= $bikeTypePrice;
-        $user->save();
-
-        return response()->json(['message' => 'Reservation created', 'reservation' => $reservation]);
-    }
-
+    // Supprimer une réservation
     public function destroy($id)
     {
-        $reservation = Reservation::findOrFail($id);
+        $reservation = Reservation::find($id);
+
+        if (!$reservation) {
+            return response()->json(['message' => 'Reservation not found.'], 404);
+        }
+
         $reservation->delete();
-        return response()->json(['message' => 'Reservation deleted']);
+
+        return response()->json(['message' => 'Reservation deleted successfully.']);
     }
 }

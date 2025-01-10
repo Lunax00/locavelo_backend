@@ -7,41 +7,67 @@ use Illuminate\Http\Request;
 
 class BikeController extends Controller
 {
+    // Liste des vélos
     public function index()
     {
-        return Bike::with('typeVelo', 'station')->get();
+        $bikes = Bike::all();
+        return response()->json($bikes);
     }
 
-    public function show($id)
-    {
-        return Bike::with('typeVelo', 'station')->findOrFail($id);
-    }
-
+    // Ajouter un vélo
     public function store(Request $request)
     {
-        $bike = Bike::create($request->all());
+        $validatedData = $request->validate([
+            'type_velo_id' => 'required|exists:type_velos,id',
+            'state' => 'required|string|in:Disponible,En réparation,Hors service',
+            'station_id' => 'nullable|exists:stations,id',
+        ]);
+
+        $bike = Bike::create($validatedData);
         return response()->json($bike, 201);
     }
 
+    // Voir un vélo spécifique
+    public function show($id)
+    {
+        $bike = Bike::find($id);
+
+        if (!$bike) {
+            return response()->json(['message' => 'Vélo introuvable'], 404);
+        }
+
+        return response()->json($bike);
+    }
+
+    // Mettre à jour un vélo
     public function update(Request $request, $id)
     {
-        $bike = Bike::findOrFail($id);
-        $bike->update($request->all());
-        return response()->json($bike, 200);
+        $validatedData = $request->validate([
+            'type_velo_id' => 'sometimes|required|exists:type_velos,id',
+            'state' => 'sometimes|required|string|in:Disponible,En réparation,Hors service',
+            'station_id' => 'nullable|exists:stations,id',
+        ]);
+
+        $bike = Bike::find($id);
+
+        if (!$bike) {
+            return response()->json(['message' => 'Vélo introuvable'], 404);
+        }
+
+        $bike->update($validatedData);
+        return response()->json($bike);
     }
 
-    public function changeState(Request $request, $id)
-    {
-        $bike = Bike::findOrFail($id);
-        $bike->state = $request->input('state');
-        $bike->save();
-        return response()->json(['message' => 'Bike state updated', 'bike' => $bike]);
-    }
-
+    // Supprimer un vélo
     public function destroy($id)
     {
-        $bike = Bike::findOrFail($id);
+        $bike = Bike::find($id);
+
+        if (!$bike) {
+            return response()->json(['message' => 'Vélo introuvable'], 404);
+        }
+
         $bike->delete();
-        return response()->json(['message' => 'Bike deleted successfully']);
+        return response()->json(['message' => 'Vélo supprimé avec succès']);
     }
 }

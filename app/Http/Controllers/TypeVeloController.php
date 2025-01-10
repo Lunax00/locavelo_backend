@@ -7,33 +7,67 @@ use Illuminate\Http\Request;
 
 class TypeVeloController extends Controller
 {
+    // Liste des types de vélos
     public function index()
     {
-        return TypeVelo::all();
+        $types = TypeVelo::all();
+        return response()->json($types);
     }
 
-    public function show($id)
-    {
-        return TypeVelo::findOrFail($id);
-    }
-
+    // Créer un nouveau type de vélo
     public function store(Request $request)
     {
-        $typeVelo = TypeVelo::create($request->all());
+        $validatedData = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'required|string',
+            'price' => 'required|numeric',
+        ]);
+
+        $typeVelo = TypeVelo::create($validatedData);
         return response()->json($typeVelo, 201);
     }
 
-    public function update(Request $request, $id)
+    // Afficher un type de vélo spécifique
+    public function show($id)
     {
-        $typeVelo = TypeVelo::findOrFail($id);
-        $typeVelo->update($request->all());
-        return response()->json($typeVelo, 200);
+        $typeVelo = TypeVelo::find($id);
+
+        if (!$typeVelo) {
+            return response()->json(['message' => 'Type de vélo introuvable'], 404);
+        }
+
+        return response()->json($typeVelo);
     }
 
+    // Mettre à jour un type de vélo
+    public function update(Request $request, $id)
+    {
+        $validatedData = $request->validate([
+            'name' => 'sometimes|required|string|max:255',
+            'description' => 'sometimes|required|string',
+            'price' => 'sometimes|required|numeric',
+        ]);
+
+        $typeVelo = TypeVelo::find($id);
+
+        if (!$typeVelo) {
+            return response()->json(['message' => 'Type de vélo introuvable'], 404);
+        }
+
+        $typeVelo->update($validatedData);
+        return response()->json($typeVelo);
+    }
+
+    // Supprimer un type de vélo
     public function destroy($id)
     {
-        $typeVelo = TypeVelo::findOrFail($id);
+        $typeVelo = TypeVelo::find($id);
+
+        if (!$typeVelo) {
+            return response()->json(['message' => 'Type de vélo introuvable'], 404);
+        }
+
         $typeVelo->delete();
-        return response()->json(['message' => 'TypeVelo deleted']);
+        return response()->json(['message' => 'Type de vélo supprimé avec succès']);
     }
 }

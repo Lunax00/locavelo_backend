@@ -20,6 +20,7 @@ use App\Http\Controllers\TypeVeloController;
 
 // User Controllers
 use App\Http\Controllers\UserController;
+use Database\Seeders\TypeVeloSeeder;
 
 /*
 |--------------------------------------------------------------------------
@@ -33,47 +34,50 @@ use App\Http\Controllers\UserController;
 */
 
 // Public routes
-Route::post('/login', [AuthController::class, 'login']); // Login route
-Route::post('/register', [AuthController::class, 'register']); // Register route
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/login', [AuthController::class, 'login']);
+Route::post('/logout', [AuthController::class, 'logout']);
+
+
 Route::get('/stations', [StationController::class, 'index']); // Liste toutes les stations
 Route::get('/station/{id}', [StationController::class, 'show']); // Affiche une station spécifique
 Route::post('/stations', [StationController::class, 'store']); // Ajoute une nouvelle station
 Route::put('/station/{id}', [StationController::class, 'update']); // Met à jour une station existante
 Route::delete('/station/{id}', [StationController::class, 'destroy']); // Supprime une station
-// Protecting routes with Sanctum
-Route::middleware('auth:sanctum')->group(function () {
-    // Auth routes
-    Route::post('/logout', [AuthController::class, 'logout']); // Logout route
 
-    // Bikes routes
-    Route::get('/bikes', [BikeController::class, 'index']);
-    Route::get('/bike/{id}', [BikeController::class, 'show']);
-    Route::post('/bikes', [BikeController::class, 'store']);
-    Route::put('/bike/{id}', [BikeController::class, 'update']);
-    Route::delete('/bike/{id}', [BikeController::class, 'destroy']);
+//typesvelos
 
-    // Reservations routes
-    Route::get('/reservations', [ReservationController::class, 'index']);
-    Route::get('/reservation/{id}', [ReservationController::class, 'show']);
-    Route::post('/reservations', [ReservationController::class, 'store']);
-    Route::put('/reservation/{id}', [ReservationController::class, 'update']);
-    Route::delete('/reservation/{id}', [ReservationController::class, 'destroy']);
+Route::get('/type-velos', [TypeVeloController::class, 'index']); // Liste des types de vélos
+Route::post('/type-velos', [TypeVeloController::class, 'store']); // Créer un type de vélo
+Route::get('/type-velos/{id}', [TypeVeloController::class, 'show']); // Afficher un type de vélo spécifique
+Route::put('/type-velos/{id}', [TypeVeloController::class, 'update']); // Mettre à jour un type de vélo
+Route::delete('/type-velos/{id}', [TypeVeloController::class, 'destroy']); // Supprimer un type de vélo
 
-    // TypeVelo routes
-    Route::get('/type-velos', [TypeVeloController::class, 'index']);
-    Route::get('/type-velo/{id}', [TypeVeloController::class, 'show']);
-    Route::post('/type-velos', [TypeVeloController::class, 'store']);
-    Route::put('/type-velo/{id}', [TypeVeloController::class, 'update']);
-    Route::delete('/type-velo/{id}', [TypeVeloController::class, 'destroy']);
 
-    // User-specific routes
-    Route::get('/users/{id}', [UserController::class, 'show']);
-    Route::post('/users', [UserController::class, 'store']);
-    Route::put('/users/{id}', [UserController::class, 'update']);
-    Route::delete('/users/{id}', [UserController::class, 'destroy']);
-    Route::post('/users/{id}/add-credits', [UserController::class, 'addCredits']);
-    Route::get('/users/{id}/reservations', [UserController::class, 'reservations']);
-});
+// velos:
+Route::get('/bikes', [BikeController::class, 'index']); // Liste des vélos
+Route::post('/bikes', [BikeController::class, 'store']); // Ajouter un vélo
+Route::get('/bikes/{id}', [BikeController::class, 'show']); // Voir un vélo spécifique
+Route::put('/bikes/{id}', [BikeController::class, 'update']); // Mettre à jour un vélo
+Route::delete('/bikes/{id}', [BikeController::class, 'destroy']); // Supprimer un vélo
+
+//reservations
+// Historique avec filtres
+Route::get('/reservations/history', [ReservationController::class, 'history']);
+
+// Supprimer une réservation
+Route::delete('/reservations/{id}', [ReservationController::class, 'destroy']);
+
+// users
+
+Route::get('/users', [UserController::class, 'index']); // Liste des utilisateurs
+Route::put('/users/{id}', [UserController::class, 'update']); // Mettre à jour un utilisateur
+// Mettre à jour les crédits d'un utilisateur
+Route::post('/users/{id}/update-credits', [UserController::class, 'updateCredits']);
+
+// Supprimer un utilisateur
+Route::delete('/users/{id}', [UserController::class, 'destroy']);
+Route::post('/users/{id}/toggle-status', [UserController::class, 'toggleStatus']); // Sanctionner/Désanctionner
 
 // Fallback route for unauthorized users
 Route::fallback(function () {
